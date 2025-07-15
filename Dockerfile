@@ -6,27 +6,31 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     libpng-dev \
-    libjpeg-dev \
+    libjpeg62-turbo-dev \
     libfreetype6-dev \
     libicu-dev \
     libxml2-dev \
     libssl-dev \
     libcurl4-openssl-dev \
+    libonig-dev \
     cron \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure and install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        gd \
-        zip \
-        pdo_mysql \
-        mysqli \
-        intl \
-        xml \
-        curl \
-        mbstring \
-        opcache
+# Configure GD extension for PHP 7.4
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg
+
+# Install PHP extensions one by one
+RUN docker-php-ext-install gd
+RUN docker-php-ext-install zip
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install mysqli
+RUN docker-php-ext-install intl
+RUN docker-php-ext-install xml
+RUN docker-php-ext-install curl
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-install opcache
 
 # Set PHP configuration
 RUN echo "memory_limit = 256M" > /usr/local/etc/php/conf.d/dolibarr.ini \
@@ -41,8 +45,7 @@ RUN wget -O dolibarr.zip "https://github.com/Dolibarr/dolibarr/archive/refs/tags
     && unzip dolibarr.zip \
     && rm dolibarr.zip \
     && mv dolibarr-${DOLI_VERSION}/* /var/www/html/ \
-    && mv dolibarr-${DOLI_VERSION}/.* /var/www/html/ 2>/dev/null || true \
-    && rm -rf dolibarr-${DOLI_VERSION} \
+    && rmdir dolibarr-${DOLI_VERSION} \
     && rm -f /var/www/html/index.html
 
 # Create required directories and set permissions
