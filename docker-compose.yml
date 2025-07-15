@@ -1,0 +1,103 @@
+version: "3.8"
+services:
+  dolibarr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dolibarr
+    ports:
+      - "8081:80"
+    environment:
+      - DOLI_DB_HOST=mariadb
+      - DOLI_DB_NAME=degemapt_doli391
+      - DOLI_DB_USER=degemapt_doli391
+      - DOLI_DB_PASSWORD=Pegasus-3270
+      - DOLI_DB_PREFIX=llxnm_
+      - DOLI_DB_TYPE=mysqli
+      - DOLI_DB_CHARACTER_SET=utf8
+      - DOLI_DB_COLLATION=utf8_general_ci
+      - DOLI_ADMIN_LOGIN=admin
+      - DOLI_ADMIN_PASSWORD=Pegasus-3270
+      - TZ=Europe/Lisbon
+    volumes:
+      - dolibarr_data:/var/www/html
+      - dolibarr_docs:/var/www/documents
+      - dolibarr_custom:/var/www/html/custom
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+  mariadb:
+    image: mariadb:10.6
+    container_name: mariadb_server
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=Pegasus-3270
+      - TZ=Europe/Lisbon
+    volumes:
+      - dolibarr_database:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+  code-server:
+    image: codercom/code-server:latest
+    container_name: vscode_server
+    ports:
+      - "8083:8080"
+    user: "0:0"
+    environment:
+      - TZ=Europe/Lisbon
+    volumes:
+      - dolibarr_data:/dolibarr/html
+      - dolibarr_docs:/dolibarr/documents
+      - dolibarr_database:/dolibarr/database
+      - dolibarr_backup:/dolibarr/backup
+      - dolibarr_custom:/dolibarr/custom
+      - ./:/dolibarr/project
+    command: ["--bind-addr", "0.0.0.0:8080", "--auth", "none"]
+    restart: unless-stopped
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    ports:
+      - "8082:80"
+    environment:
+      - PMA_HOST=mariadb
+      - PMA_PORT=3306
+      - PMA_USER=root
+      - PMA_PASSWORD=Pegasus-3270
+      - TZ=Europe/Lisbon
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+  backup:
+    image: python:3.11-alpine
+    container_name: backup_service
+    privileged: true
+    environment:
+      - CRON_SCHEDULE=0 3 * * *
+      - TZ=Europe/Lisbon
+    volumes:
+      - dolibarr_docs:/data/documents:ro
+      - dolibarr_database:/data/database:ro
+      - ./:/project
+      - dolibarr_backup:/backups
+    command: >
+      sh -c "
+      apk add --no-cache mariadb-client dcron tzdata &&
+      cp /usr/share/zoneinfo/Europe/Lisbon /etc/localtime &&
+      echo 'Europe/Lisbon' > /etc/timezone &&
+      pip install --no-cache-dir -r /project/requirements.txt &&
+      chmod +x /project/backup.py &&
+      echo '0 3 * * * cd /project && python backup.py' > /etc/crontabs/root &&
+      /usr/sbin/crond -b &&
+      tail -f /dev/null
+      "
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+volumes:
+  dolibarr_data:
+  dolibarr_docs:
+  dolibarr_database:
+  dolibarr_backup:
+  dolibarr_custom:
