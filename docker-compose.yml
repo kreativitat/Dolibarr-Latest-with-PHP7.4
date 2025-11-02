@@ -80,7 +80,7 @@ services:
     image: duplicati/duplicati:latest
     container_name: duplicati
     ports:
-      - "8084:8200"
+      - "8085:8200"
     environment:
       - TZ=Europe/Lisbon
     volumes:
