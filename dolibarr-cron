@@ -1,2 +1,0 @@
-*/5 * * * * www-data php /var/www/html/scripts/cron/cron_run_jobs.php tBR6eHjwyG7Z5v512Fs349OrDMrWk5tY DeGema_Bot > /dev/null 2>&1
-42 3 * * * www-data php /var/www/html/custom/dolisync/api/cronjob.php > /dev/null 2>&1

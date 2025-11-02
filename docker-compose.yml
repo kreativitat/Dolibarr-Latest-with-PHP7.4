@@ -76,31 +76,23 @@ services:
       - mariadb
     restart: unless-stopped
 
-  backup:
-    image: python:3.11-alpine
-    container_name: backup_service
-    privileged: true
+  duplicati:
+    image: duplicati/duplicati:latest
+    container_name: duplicati
+    ports:
+      - "8084:8200"
     environment:
-      - CRON_SCHEDULE=0 3 * * *
       - TZ=Europe/Lisbon
     volumes:
-      - dolibarr_docs:/data/documents:ro
-      - dolibarr_database:/data/database:ro
-      - ./:/project
+      - duplicati_config:/data
       - dolibarr_backup:/backups
-    command: >
-      sh -c "
-      apk add --no-cache mariadb-client dcron tzdata &&
-      cp /usr/share/zoneinfo/Europe/Lisbon /etc/localtime &&
-      echo 'Europe/Lisbon' > /etc/timezone &&
-      pip install --no-cache-dir -r /project/requirements.txt &&
-      chmod +x /project/backup.py &&
-      echo '0 3 * * * cd /project && python backup.py' > /etc/crontabs/root &&
-      /usr/sbin/crond -b &&
-      tail -f /dev/null
-      "
+      - dolibarr_docs:/source/documents:ro
+      - dolibarr_database:/source/database:ro
+      - dolibarr_data:/source/html:ro
+      - dolibarr_custom:/source/custom:ro
     depends_on:
       - mariadb
+      - dolibarr
     restart: unless-stopped
 
 volumes:
@@ -109,3 +101,4 @@ volumes:
   dolibarr_database:
   dolibarr_backup:
   dolibarr_custom:
+  duplicati_config:

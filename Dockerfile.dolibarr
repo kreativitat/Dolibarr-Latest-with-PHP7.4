@@ -2,7 +2,6 @@ FROM php:7.4-apache
 
 # Install system dependencies for PHP extensions and utilities
 RUN apt-get update -qq && apt-get install -y \
-    cron \
     unzip \
     wget \
     autoconf \
@@ -18,21 +17,14 @@ RUN apt-get update -qq && apt-get install -y \
     libfreetype6-dev \
     libjpeg-dev \
     libxslt-dev \
-    mariadb-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
        mysqli pdo pdo_mysql zip curl soap intl fileinfo gd mbstring xml \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Copy cron job config
-COPY dolibarr-cron /etc/cron.d/dolibarr-cron
-
-RUN chmod 0644 /etc/cron.d/dolibarr-cron && \
-    crontab /etc/cron.d/dolibarr-cron
 
 # Fix permissions for apache user (will be overridden by volume but good to have)
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
 
-CMD service cron start && apache2-foreground
+CMD ["apache2-foreground"]
