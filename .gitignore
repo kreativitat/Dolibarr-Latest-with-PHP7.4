@@ -1,0 +1,5 @@
+# Data directories
+data/
+
+# Configuration file (contains sensitive passwords)
+conf.php

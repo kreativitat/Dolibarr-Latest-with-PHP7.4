@@ -23,9 +23,9 @@ services:
       - PHP_INI_DISPLAY_ERRORS=0
       - PHP_INI_LOG_ERRORS=0
     volumes:
-      - dolibarr_data:/var/www/html
-      - dolibarr_docs:/var/www/documents
-      - dolibarr_custom:/var/www/html/custom
+      - ./data/html:/var/www/html
+      - ./data/documents:/var/www/documents
+      - ./data/custom:/var/www/html/custom
     depends_on:
       - mariadb
     restart: unless-stopped
@@ -39,7 +39,7 @@ services:
       - MYSQL_ROOT_PASSWORD=Pegasus-3270
       - TZ=Europe/Lisbon
     volumes:
-      - dolibarr_database:/var/lib/mysql
+      - ./data/database:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
@@ -52,11 +52,11 @@ services:
     environment:
       - TZ=Europe/Lisbon
     volumes:
-      - dolibarr_data:/dolibarr/html
-      - dolibarr_docs:/dolibarr/documents
-      - dolibarr_database:/dolibarr/database
-      - dolibarr_backup:/dolibarr/backup
-      - dolibarr_custom:/dolibarr/custom
+      - ./data/html:/dolibarr/html
+      - ./data/documents:/dolibarr/documents
+      - ./data/database:/dolibarr/database
+      - ./data/backup:/dolibarr/backup
+      - ./data/custom:/dolibarr/custom
       - ./:/dolibarr/project
     command: ["--bind-addr", "0.0.0.0:8080", "--auth", "none"]
     restart: unless-stopped
@@ -84,21 +84,13 @@ services:
     environment:
       - TZ=Europe/Lisbon
     volumes:
-      - duplicati_config:/data
-      - dolibarr_backup:/backups
-      - dolibarr_docs:/source/documents:ro
-      - dolibarr_database:/source/database:ro
-      - dolibarr_data:/source/html:ro
-      - dolibarr_custom:/source/custom:ro
+      - ./data/duplicati:/data
+      - ./data/backup:/backups
+      - ./data/documents:/source/documents:ro
+      - ./data/database:/source/database:ro
+      - ./data/html:/source/html:ro
+      - ./data/custom:/source/custom:ro
     depends_on:
       - mariadb
       - dolibarr
     restart: unless-stopped
-
-volumes:
-  dolibarr_data:
-  dolibarr_docs:
-  dolibarr_database:
-  dolibarr_backup:
-  dolibarr_custom:
-  duplicati_config:
