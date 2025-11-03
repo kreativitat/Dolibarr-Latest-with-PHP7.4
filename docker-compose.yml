@@ -23,9 +23,9 @@ services:
       - PHP_INI_DISPLAY_ERRORS=0
       - PHP_INI_LOG_ERRORS=0
     volumes:
-      - ./data/html:/var/www/html
-      - ./data/documents:/var/www/documents
-      - ./data/custom:/var/www/html/custom
+      - /home/kreativitat/data/html:/var/www/html
+      - /home/kreativitat/data/documents:/var/www/documents
+      - /home/kreativitat/data/custom:/var/www/html/custom
     depends_on:
       - mariadb
     restart: unless-stopped
@@ -39,8 +39,8 @@ services:
       - MYSQL_ROOT_PASSWORD=Pegasus-3270
       - TZ=Europe/Lisbon
     volumes:
-      - ./data/database:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - /home/kreativitat/data/database:/var/lib/mysql
+      - /home/kreativitat/dolibarr-setup/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
   code-server:
@@ -52,12 +52,12 @@ services:
     environment:
       - TZ=Europe/Lisbon
     volumes:
-      - ./data/html:/dolibarr/html
-      - ./data/documents:/dolibarr/documents
-      - ./data/database:/dolibarr/database
-      - ./data/backup:/dolibarr/backup
-      - ./data/custom:/dolibarr/custom
-      - ./:/dolibarr/project
+      - /home/kreativitat/data/html:/dolibarr/html
+      - /home/kreativitat/data/documents:/dolibarr/documents
+      - /home/kreativitat/data/database:/dolibarr/database
+      - /home/kreativitat/data/backup:/dolibarr/backup
+      - /home/kreativitat/data/custom:/dolibarr/custom
+      - /home/kreativitat/dolibarr-setup:/dolibarr/project
     command: ["--bind-addr", "0.0.0.0:8080", "--auth", "none"]
     restart: unless-stopped
 
@@ -84,12 +84,12 @@ services:
     environment:
       - TZ=Europe/Lisbon
     volumes:
-      - ./data/duplicati:/data
-      - ./data/backup:/backups
-      - ./data/documents:/source/documents:ro
-      - ./data/database:/source/database:ro
-      - ./data/html:/source/html:ro
-      - ./data/custom:/source/custom:ro
+      - /home/kreativitat/data/duplicati:/data
+      - /home/kreativitat/data/backup:/backups
+      - /home/kreativitat/data/documents:/source/documents:ro
+      - /home/kreativitat/data/database:/source/database:ro
+      - /home/kreativitat/data/html:/source/html:ro
+      - /home/kreativitat/data/custom:/source/custom:ro
     depends_on:
       - mariadb
       - dolibarr
